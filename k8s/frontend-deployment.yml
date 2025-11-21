@@ -1,10 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend-deployment
+  name: frontend
   namespace: auth-system
-  labels:
-    app: frontend
 spec:
   replicas: 1
   selector:
@@ -12,18 +10,11 @@ spec:
       app: frontend
   template:
     metadata:
-      name: frontend-pod
       labels:
         app: frontend
     spec:
       containers:
-        - name: auth-frontend
+        - name: frontend
           image: avishkarlakade/auth-frontend:latest
           ports:
             - containerPort: 80
-          env:
-            - name: NODE_ENV
-              value: production
-          envFrom:
-            - secretRef:
-                name: authapp-secrets
