@@ -3,9 +3,13 @@ kind: Service
 metadata:
   name: frontend
   namespace: auth-system
+  labels:
+    app: frontend
 spec:
+  type: NodePort
   selector:
     app: frontend
   ports:
     - port: 80
       targetPort: 80
+      nodePort: 5703
