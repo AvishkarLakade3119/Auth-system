@@ -6,9 +6,10 @@ metadata:
   labels:
     app: admin-ui
 spec:
-  type: ClusterIP
+  type: NodePort
   selector:
     app: admin-ui
   ports:
     - port: 80
       targetPort: 80
+      nodePort: 3001
