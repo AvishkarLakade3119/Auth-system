@@ -1,31 +1,37 @@
-# 1️⃣ Build Stage (Vite Build)
+# ---- Build Stage ----
 FROM node:18-alpine AS build
 
 WORKDIR /app
 
-# Copy package.json and package-lock.json first (for caching)
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install
-
-# Copy rest of the source code
 COPY . .
 
-# Build the Vite app
 RUN npm run build
 
-# 2️⃣ Production Stage (NGINX)
+# ---- NGINX Stage ----
 FROM nginx:stable-alpine
 
-# Remove default NGINX website
+# Remove default files
 RUN rm -rf /usr/share/nginx/html/*
 
-# Copy Vite build output to NGINX
+# Copy build output
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Expose port 80
-EXPOSE 80
+# Configure correct routing for Vite/React SPA
+COPY <<EOF /etc/nginx/conf.d/default.conf
+server {
+    listen 80;
+    server_name _;
 
-# Start NGINX
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location / {
+        try_files \$uri /index.html;
+    }
+}
+EOF
+
+EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
