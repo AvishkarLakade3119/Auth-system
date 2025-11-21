@@ -1,25 +1,29 @@
 apiVersion: apps/v1
 kind: Deployment
-metadata: 
+metadata:
   name: frontend-deployment
   namespace: auth-system
+  labels:
+    app: frontend
 spec:
   replicas: 1
-  selector: 
-    matchLabels: 
+  selector:
+    matchLabels:
       app: frontend
-  template: 
-    metadata: 
+  template:
+    metadata:
       name: frontend-pod
-      namespace: auth-system
-      labels: 
+      labels:
         app: frontend
     spec:
       containers:
-      - name: auth-frontend
-        image: avishkarlakade/auth-frontend:latest
-        ports:
-          - containerPort: 80
-        env: 
-          - name: NODE_ENV
-            value: production
+        - name: auth-frontend
+          image: avishkarlakade/auth-frontend:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: NODE_ENV
+              value: production
+          envFrom:
+            - secretRef:
+                name: authapp-secrets
