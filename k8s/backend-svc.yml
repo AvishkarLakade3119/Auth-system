@@ -8,5 +8,5 @@ spec:
   selector:
     app: backend
   ports:
-    - port: 5001
+    - port: 5000
       targetPort: 5000
