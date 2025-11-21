@@ -1,7 +1,7 @@
 # ----------------------------
 # 1. Build Stage
 # ----------------------------
-FROM node:20-alpine AS build    # ← Node 20 REQUIRED by Vite
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
