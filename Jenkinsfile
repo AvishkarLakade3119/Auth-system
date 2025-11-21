@@ -66,7 +66,8 @@ pipeline {
             steps {
                 script {
                     sh """
-                        kubectl get namespace ${K8S_NAMESPACE} || kubectl create namespace ${K8S_NAMESPACE}
+                        set -e
+                        kubectl apply -f ./k8s/namespace.yml
                         kubectl apply -n ${K8S_NAMESPACE} -f ./k8s/
 
                         echo "Waiting for deployments to complete..."
