@@ -70,33 +70,23 @@ pipeline {
                         # Create namespace if not exists
                         kubectl get namespace ${K8S_NAMESPACE} || kubectl create namespace ${K8S_NAMESPACE}
 
-                        # Apply all manifests
+                        echo "Applying Kubernetes Manifests..."
                         kubectl apply -n ${K8S_NAMESPACE} -f ./k8s/
 
-                        echo "Waiting for Deployments to Rollout..."
+                        echo "Restarting deployments so they pull latest image..."
+                        kubectl -n ${K8S_NAMESPACE} rollout restart deployment/backend-deployment
+                        kubectl -n ${K8S_NAMESPACE} rollout restart deployment/frontend
+                        kubectl -n ${K8S_NAMESPACE} rollout restart deployment/admin-ui-deployment
 
-                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/backend-deployment --timeout=120s
-                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/frontend --timeout=120s
-                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/admin-ui-deployment --timeout=120s
+                        echo "Waiting for Rollouts..."
+                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/backend-deployment --timeout=180s
+                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/frontend --timeout=180s
+                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/admin-ui-deployment --timeout=180s
                     """
                 }
             }
         }
 
-        stage('Port Forward Services') {
-            steps {
-                script {
-                    sh """
-                        # Kill existing port-forward
-                        pkill -f 'kubectl port-forward' || true
-
-                        # Only forward frontend & admin if needed locally
-                        nohup kubectl port-forward service/frontend 8080:80 -n ${K8S_NAMESPACE} > /tmp/frontend.log 2>&1 &
-                        nohup kubectl port-forward service/admin-ui 3001:80 -n ${K8S_NAMESPACE} > /tmp/adminui.log 2>&1 &
-                    """
-                }
-            }
-        }
     }
 
     post {
