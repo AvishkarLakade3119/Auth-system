@@ -3,9 +3,10 @@ kind: Service
 metadata:
   name: mongodb
   namespace: chat-app
-spec: 
+spec:
+  type: ClusterIP
   selector:
     app: mongodb
-  ports: 
-  - port: 27017
-    targetPort: 27017
+  ports:
+    - port: 27017
+      targetPort: 27017
