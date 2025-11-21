@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = 'dockerhub-credentials'
+        DOCKERHUB_CREDENTIALS = 'dockerhub-cred'
         DOCKERHUB_NAMESPACE = 'avishkarlakade'
         BACKEND_IMAGE = "avishkarlakade/chatapp-backend"
         FRONTEND_IMAGE = "avishkarlakade/chatapp-frontend"
