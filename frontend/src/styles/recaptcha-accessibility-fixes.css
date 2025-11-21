@@ -1,0 +1,108 @@
+/* Global ReCAPTCHA Accessibility Fixes */
+
+/* Prevent aria-hidden from hiding focusable elements in reCAPTCHA */
+[aria-hidden="true"] td[id*="rc-imageselect-tile"],
+[aria-hidden="true"] .rc-imageselect-checkbox,
+[aria-hidden="true"] button,
+[aria-hidden="true"] input,
+[aria-hidden="true"] select,
+[aria-hidden="true"] textarea,
+[aria-hidden="true"] a[href] {
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure reCAPTCHA tiles are keyboard accessible */
+td[id*="rc-imageselect-tile"] {
+  cursor: pointer;
+  position: relative;
+}
+
+td[id*="rc-imageselect-tile"]:focus {
+  outline: 3px solid #4285f4;
+  outline-offset: 2px;
+  z-index: 1;
+}
+
+/* Improve contrast for better accessibility */
+.rc-imageselect-instructions strong {
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+/* Ensure proper focus visibility on reCAPTCHA buttons */
+.rc-button:focus,
+.rc-button-default:focus {
+  outline: 2px solid #4285f4;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(66, 133, 244, 0.2);
+}
+
+/* Fix for dark mode */
+[data-theme="dark"] .rc-imageselect-instructions {
+  color: #e8eaed;
+}
+
+[data-theme="dark"] .rc-imageselect-instructions strong {
+  color: #ffffff;
+}
+
+/* Ensure checkbox is visible and accessible */
+.rc-imageselect-checkbox {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Fix table role for screen readers */
+.rc-imageselect-table-44,
+.rc-imageselect-table-33 {
+  border-collapse: separate;
+  border-spacing: 2px;
+}
+
+/* Ensure tiles have proper interactive states */
+td[id*="rc-imageselect-tile"]:hover {
+  opacity: 0.8;
+}
+
+td[id*="rc-imageselect-tile"]:active {
+  transform: scale(0.98);
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  td[id*="rc-imageselect-tile"]:focus {
+    outline: 4px solid currentColor;
+  }
+  
+  .rc-button:focus,
+  .rc-button-default:focus {
+    outline: 3px solid currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  td[id*="rc-imageselect-tile"]:active {
+    transform: none;
+  }
+  
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Screen reader only text for better context */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

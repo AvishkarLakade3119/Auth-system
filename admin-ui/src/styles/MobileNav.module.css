@@ -1,0 +1,271 @@
+.mobileNav {
+  display: none;
+}
+
+/* Hamburger Button */
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  z-index: 1002;
+  transition: all 0.3s ease;
+}
+
+.hamburgerLine {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background-color: var(--text-primary);
+  margin: 3px 0;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transform-origin: center;
+}
+
+/* Hamburger Animation */
+.hamburger.open .hamburgerLine:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.hamburger.open .hamburgerLine:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.hamburger.open .hamburgerLine:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 999;
+}
+
+.overlayOpen {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Mobile Menu */
+.mobileMenu {
+  position: fixed;
+  top: 0;
+  left: -320px;
+  width: 280px;
+  height: 100vh;
+  background-color: var(--card-bg);
+  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.menuOpen {
+  transform: translateX(320px);
+}
+
+/* Menu Header */
+.menuHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--gradient-primary);
+  color: white;
+}
+
+.menuTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.closeBtn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+}
+
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(90deg);
+}
+
+/* Menu List */
+.menuList {
+  list-style: none;
+  padding: 1rem 0;
+  margin: 0;
+  flex: 1;
+}
+
+.menuList li {
+  margin: 0.25rem 0;
+}
+
+.menuLink {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.menuLink::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--gradient-primary);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+.menuLink:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+  padding-left: 2rem;
+}
+
+.menuLink:hover::before {
+  transform: translateX(0);
+}
+
+.menuLink.active {
+  background: linear-gradient(to right, var(--primary-light), transparent);
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.menuLink.active::before {
+  transform: translateX(0);
+}
+
+.icon {
+  font-size: 1.25rem;
+  margin-right: 1rem;
+  width: 1.5rem;
+  text-align: center;
+}
+
+.label {
+  flex: 1;
+  font-size: 0.975rem;
+}
+
+.arrow {
+  width: 16px;
+  height: 16px;
+  opacity: 0.5;
+  transition: all 0.2s ease;
+}
+
+.menuLink:hover .arrow,
+.menuLink.active .arrow {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+/* Menu Footer */
+.menuFooter {
+  padding: 1.5rem;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+.footerText {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Responsive - Show on Mobile */
+@media (max-width: 768px) {
+  .mobileNav {
+    display: block;
+  }
+
+  /* Adjust menu for smaller screens */
+  @media (max-width: 360px) {
+    .mobileMenu {
+      width: 100%;
+      left: -100%;
+    }
+
+    .menuOpen {
+      transform: translateX(100%);
+    }
+  }
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .mobileMenu {
+  background-color: var(--card-bg);
+  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .closeBtn {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .closeBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
