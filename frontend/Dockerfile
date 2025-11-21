@@ -1,37 +1,24 @@
 # ---- Build Stage ----
-FROM node:18-alpine AS build
+FROM node:20-alpine AS build   # IMPORTANT: USE NODE 20 FOR VITE
 
 WORKDIR /app
 
 COPY package*.json ./
 RUN npm install
-COPY . .
 
+COPY . .
 RUN npm run build
 
 # ---- NGINX Stage ----
 FROM nginx:stable-alpine
 
-# Remove default files
 RUN rm -rf /usr/share/nginx/html/*
 
-# Copy build output
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Configure correct routing for Vite/React SPA
-COPY <<EOF /etc/nginx/conf.d/default.conf
-server {
-    listen 80;
-    server_name _;
-
-    root /usr/share/nginx/html;
-    index index.html;
-
-    location / {
-        try_files \$uri /index.html;
-    }
-}
-EOF
+# COPY NGINX CONFIG
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
+
 CMD ["nginx", "-g", "daemon off;"]
