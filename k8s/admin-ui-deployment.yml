@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: admin-deployment
+  namespace: chat-app
+spec:
+  replicas: 1
+  selector: 
+    matchLabels: 
+      app: admin
+  template: 
+    metadata: 
+      name: admin-pod
+      namespace: chat-app
+      labels: 
+        app: admin
+    spec:
+      containers:
+      - name: auth-admin
+        image: avishkarlakade/auth-admin:latest
+        ports:
+        - containerPort: 80
+        env: 
+        - name: NODE_ENV
+          value: production
