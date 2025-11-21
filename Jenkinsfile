@@ -9,7 +9,6 @@ pipeline {
         FRONTEND_IMAGE = "${DOCKERHUB_NAMESPACE}/auth-frontend"
         ADMIN_IMAGE = "${DOCKERHUB_NAMESPACE}/auth-admin"
 
-        KUBECONFIG = '/home/jenkins/.kube/config'
         K8S_NAMESPACE = 'auth-system'
     }
 
@@ -17,13 +16,14 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/AvishkarLakade3119/Auth-system'
+                git branch: 'main',
+                    credentialsId: 'GitHub-cred',
+                    url: 'https://github.com/AvishkarLakade3119/Auth-system'
             }
         }
 
         stage('Build Docker Images') {
             parallel {
-
                 stage('Backend') {
                     steps {
                         script {
@@ -64,17 +64,20 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                script {
-                    sh """
-                        set -e
-                        kubectl apply -f ./k8s/namespace.yml
-                        kubectl apply -n ${K8S_NAMESPACE} -f ./k8s/
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
+                    script {
+                        sh """
+                            export KUBECONFIG=${KUBECONFIG_FILE}
+                            set -e
+                            kubectl apply -f ./k8s/namespace.yml
+                            kubectl apply -n ${K8S_NAMESPACE} -f ./k8s/
 
-                        echo "Waiting for deployments to complete..."
-                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/backend-deployment
-                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/frontend-deployment
-                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/admin-ui-deployment
-                    """
+                            echo "Waiting for deployments to complete..."
+                            kubectl -n ${K8S_NAMESPACE} rollout status deployment/backend-deployment
+                            kubectl -n ${K8S_NAMESPACE} rollout status deployment/frontend-deployment
+                            kubectl -n ${K8S_NAMESPACE} rollout status deployment/admin-ui-deployment
+                        """
+                    }
                 }
             }
         }
