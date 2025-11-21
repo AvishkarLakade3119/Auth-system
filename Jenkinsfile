@@ -3,13 +3,14 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = 'dockerhub-cred'
-        DOCKERHUB_NAMESPACE = 'avishkarlakade'
+        DOCKERHUB_NAMESPACE   = 'avishkarlakade'
 
-        BACKEND_IMAGE = "${DOCKERHUB_NAMESPACE}/auth-backend"
-        FRONTEND_IMAGE = "${DOCKERHUB_NAMESPACE}/auth-frontend"
-        ADMIN_IMAGE = "${DOCKERHUB_NAMESPACE}/auth-admin"
+        BACKEND_IMAGE   = "${DOCKERHUB_NAMESPACE}/auth-backend"
+        FRONTEND_IMAGE  = "${DOCKERHUB_NAMESPACE}/auth-frontend"
+        ADMIN_IMAGE     = "${DOCKERHUB_NAMESPACE}/auth-admin"
 
-        K8S_NAMESPACE = 'auth-system'
+        K8S_NAMESPACE   = 'auth-system'
+        KUBECONFIG_FILE = '/var/lib/jenkins/.kube/config'
     }
 
     stages {
@@ -31,7 +32,6 @@ pipeline {
                         }
                     }
                 }
-
                 stage('Frontend') {
                     steps {
                         script {
@@ -39,7 +39,6 @@ pipeline {
                         }
                     }
                 }
-
                 stage('Admin-UI') {
                     steps {
                         script {
@@ -64,20 +63,21 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
-                    script {
-                        sh """
-                            export KUBECONFIG=${KUBECONFIG_FILE}
-                            set -e
-                            kubectl apply -f ./k8s/namespace.yml
-                            kubectl apply -n ${K8S_NAMESPACE} -f ./k8s/
+                script {
+                    sh """
+                        export KUBECONFIG=${KUBECONFIG_FILE}
 
-                            echo "Waiting for deployments to complete..."
-                            kubectl -n ${K8S_NAMESPACE} rollout status deployment/backend-deployment
-                            kubectl -n ${K8S_NAMESPACE} rollout status deployment/frontend-deployment
-                            kubectl -n ${K8S_NAMESPACE} rollout status deployment/admin-ui-deployment
-                        """
-                    }
+                        # Create namespace if not exists
+                        kubectl get namespace ${K8S_NAMESPACE} || kubectl create namespace ${K8S_NAMESPACE}
+
+                        # Apply manifests
+                        kubectl apply -n ${K8S_NAMESPACE} -f ./k8s/
+
+                        echo "Waiting for deployments to complete..."
+                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/backend-deployment --timeout=120s
+                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/frontend-deployment --timeout=120s
+                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/admin-ui-deployment --timeout=120s
+                    """
                 }
             }
         }
@@ -86,8 +86,10 @@ pipeline {
             steps {
                 script {
                     sh """
+                        # Kill any existing port-forward processes
                         pkill -f 'kubectl port-forward' || true
 
+                        # Start port-forward in background
                         nohup kubectl port-forward service/frontend 8080:80 -n ${K8S_NAMESPACE} > /tmp/frontend-pf.log 2>&1 &
                         nohup kubectl port-forward service/backend 5001:5001 -n ${K8S_NAMESPACE} > /tmp/backend-pf.log 2>&1 &
                         nohup kubectl port-forward service/admin-ui 3001:80 -n ${K8S_NAMESPACE} > /tmp/adminui-pf.log 2>&1 &
