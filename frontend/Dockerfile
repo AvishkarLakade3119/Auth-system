@@ -1,17 +1,21 @@
-
-# 1. Build Stage (Vite Build)
+# 1️⃣ Build Stage (Vite Build)
 FROM node:18-alpine AS build
 
 WORKDIR /app
 
-# Install dependencies
+# Copy package.json and package-lock.json first (for caching)
 COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy rest of the source code
 COPY . .
 
-RUN npm install
+# Build the Vite app
 RUN npm run build
 
-# 2. Production Stage (NGINX)
+# 2️⃣ Production Stage (NGINX)
 FROM nginx:stable-alpine
 
 # Remove default NGINX website
