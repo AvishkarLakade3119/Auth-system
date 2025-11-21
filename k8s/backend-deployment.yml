@@ -11,7 +11,6 @@ spec:
   template:
     metadata:
       name: backend-pod
-      namespace: auth-system
       labels:
         app: backend
     spec:
@@ -23,15 +22,6 @@ spec:
           env:
             - name: NODE_ENV
               value: production
-
-            - name: MONGODB_URI
-              value: mongodb://mongoadmin:secret@mongodb:27017/authdb?authSource=admin
-
-            - name: JWT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: auth-secrets
-                  key: jwt
-
-            - name: PORT
-              value: "5001"
+          envFrom:
+            - secretRef:
+                name: authapp-secrets
