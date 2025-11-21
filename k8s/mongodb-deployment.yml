@@ -11,7 +11,6 @@ spec:
   template: 
     metadata: 
       name: mongodb-pod
-      namespace: auth-system
       labels: 
         app: mongodb
     spec:
@@ -20,11 +19,17 @@ spec:
         image: mongo:latest
         ports:
         - containerPort: 27017
-        env: 
+        env:
         - name: MONGO_INITDB_ROOT_USERNAME
-          value: mongoadmin
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: MONGO_INITDB_ROOT_USERNAME
         - name: MONGO_INITDB_ROOT_PASSWORD
-          value: secret
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: MONGO_INITDB_ROOT_PASSWORD
         volumeMounts:
         - name: mongo-data
           mountPath: /data/db
