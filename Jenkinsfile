@@ -14,6 +14,7 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout Code') {
             steps {
                 echo 'Cloning repository...'
@@ -23,6 +24,7 @@ pipeline {
 
         stage('Build Docker Images') {
             parallel {
+
                 stage('Backend') {
                     steps {
                         echo 'Building backend Docker image...'
@@ -71,11 +73,12 @@ pipeline {
                 script {
                     sh """
                         kubectl get namespace ${K8S_NAMESPACE} || kubectl create namespace ${K8S_NAMESPACE}
+
                         kubectl apply -n ${K8S_NAMESPACE} -f ./k8s/
 
                         kubectl -n ${K8S_NAMESPACE} rollout status deployment/backend-deployment &
                         kubectl -n ${K8S_NAMESPACE} rollout status deployment/frontend-deployment &
-                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/admin-deployment &
+                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/admin-ui-deployment &
 
                         wait
                     """
@@ -92,7 +95,7 @@ pipeline {
 
                         nohup kubectl port-forward service/frontend 80:80 -n ${K8S_NAMESPACE} > /tmp/frontend-pf.log 2>&1 &
                         nohup kubectl port-forward service/backend 5001:5001 -n ${K8S_NAMESPACE} > /tmp/backend-pf.log 2>&1 &
-                        nohup kubectl port-forward service/admin-ui 3000:80 -n ${K8S_NAMESPACE} > /tmp/admin-pf.log 2>&1 &
+                        nohup kubectl port-forward service/admin-ui 3001:80 -n ${K8S_NAMESPACE} > /tmp/adminui-pf.log 2>&1 &
 
                         echo "Port forwarding started."
                     """
