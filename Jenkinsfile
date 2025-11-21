@@ -19,7 +19,7 @@ pipeline {
             steps {
                 git branch: 'main',
                     credentialsId: 'GitHub-cred',
-                    url: 'https://github.com/AvishkarLakade3119/Auth-system'
+                    url: 'https://github.com/AvishkarLakade3119/Auth-system.git'
             }
         }
 
@@ -52,7 +52,7 @@ pipeline {
         stage('Push Docker Images') {
             steps {
                 script {
-                    docker.withRegistry('', "${DOCKERHUB_CREDENTIALS}") {
+                    docker.withRegistry('', DOCKERHUB_CREDENTIALS) {
                         docker.image("${BACKEND_IMAGE}:latest").push()
                         docker.image("${FRONTEND_IMAGE}:latest").push()
                         docker.image("${ADMIN_IMAGE}:latest").push()
@@ -70,12 +70,13 @@ pipeline {
                         # Create namespace if not exists
                         kubectl get namespace ${K8S_NAMESPACE} || kubectl create namespace ${K8S_NAMESPACE}
 
-                        # Apply manifests
+                        # Apply all manifests
                         kubectl apply -n ${K8S_NAMESPACE} -f ./k8s/
 
-                        echo "Waiting for deployments to complete..."
+                        echo "Waiting for Deployments to Rollout..."
+
                         kubectl -n ${K8S_NAMESPACE} rollout status deployment/backend-deployment --timeout=120s
-                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/frontend-deployment --timeout=120s
+                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/frontend --timeout=120s
                         kubectl -n ${K8S_NAMESPACE} rollout status deployment/admin-ui-deployment --timeout=120s
                     """
                 }
@@ -86,13 +87,12 @@ pipeline {
             steps {
                 script {
                     sh """
-                        # Kill any existing port-forward processes
+                        # Kill existing port-forward
                         pkill -f 'kubectl port-forward' || true
 
-                        # Start port-forward in background
-                        nohup kubectl port-forward service/frontend 8080:80 -n ${K8S_NAMESPACE} > /tmp/frontend-pf.log 2>&1 &
-                        nohup kubectl port-forward service/backend 5001:5001 -n ${K8S_NAMESPACE} > /tmp/backend-pf.log 2>&1 &
-                        nohup kubectl port-forward service/admin-ui 3001:80 -n ${K8S_NAMESPACE} > /tmp/adminui-pf.log 2>&1 &
+                        # Only forward frontend & admin if needed locally
+                        nohup kubectl port-forward service/frontend 8080:80 -n ${K8S_NAMESPACE} > /tmp/frontend.log 2>&1 &
+                        nohup kubectl port-forward service/admin-ui 3001:80 -n ${K8S_NAMESPACE} > /tmp/adminui.log 2>&1 &
                     """
                 }
             }
