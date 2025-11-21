@@ -3,8 +3,6 @@ kind: Service
 metadata:
   name: mongodb
   namespace: auth-system
-  labels:
-    app: mongodb
 spec:
   type: ClusterIP
   selector:
