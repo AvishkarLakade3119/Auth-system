@@ -5,9 +5,9 @@ pipeline {
         DOCKERHUB_CREDENTIALS = 'dockerhub-cred'
         DOCKERHUB_NAMESPACE = 'avishkarlakade'
 
-        BACKEND_IMAGE = "avishkarlakade/auth-backend"
-        FRONTEND_IMAGE = "avishkarlakade/auth-frontend"
-        ADMIN_IMAGE = "avishkarlakade/auth-admin"
+        BACKEND_IMAGE = "${DOCKERHUB_NAMESPACE}/auth-backend"
+        FRONTEND_IMAGE = "${DOCKERHUB_NAMESPACE}/auth-frontend"
+        ADMIN_IMAGE = "${DOCKERHUB_NAMESPACE}/auth-admin"
 
         KUBECONFIG = '/home/jenkins/.kube/config'
         K8S_NAMESPACE = 'auth-system'
@@ -17,7 +17,6 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
-                echo 'Cloning repository...'
                 git branch: 'main', url: 'https://github.com/AvishkarLakade3119/Auth-system'
             }
         }
@@ -27,7 +26,6 @@ pipeline {
 
                 stage('Backend') {
                     steps {
-                        echo 'Building backend Docker image...'
                         script {
                             docker.build("${BACKEND_IMAGE}:latest", './backend')
                         }
@@ -36,7 +34,6 @@ pipeline {
 
                 stage('Frontend') {
                     steps {
-                        echo 'Building frontend Docker image...'
                         script {
                             docker.build("${FRONTEND_IMAGE}:latest", './frontend')
                         }
@@ -45,7 +42,6 @@ pipeline {
 
                 stage('Admin-UI') {
                     steps {
-                        echo 'Building admin-ui Docker image...'
                         script {
                             docker.build("${ADMIN_IMAGE}:latest", './admin-ui')
                         }
@@ -56,7 +52,6 @@ pipeline {
 
         stage('Push Docker Images') {
             steps {
-                echo 'Pushing images to DockerHub...'
                 script {
                     docker.withRegistry('', "${DOCKERHUB_CREDENTIALS}") {
                         docker.image("${BACKEND_IMAGE}:latest").push()
@@ -69,18 +64,15 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                echo 'Deploying to Kubernetes cluster...'
                 script {
                     sh """
                         kubectl get namespace ${K8S_NAMESPACE} || kubectl create namespace ${K8S_NAMESPACE}
-
                         kubectl apply -n ${K8S_NAMESPACE} -f ./k8s/
 
-                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/backend-deployment &
-                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/frontend-deployment &
-                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/admin-ui-deployment &
-
-                        wait
+                        echo "Waiting for deployments to complete..."
+                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/backend-deployment
+                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/frontend-deployment
+                        kubectl -n ${K8S_NAMESPACE} rollout status deployment/admin-ui-deployment
                     """
                 }
             }
@@ -88,16 +80,13 @@ pipeline {
 
         stage('Port Forward Services') {
             steps {
-                echo 'Starting port-forwarding...'
                 script {
                     sh """
                         pkill -f 'kubectl port-forward' || true
 
-                        nohup kubectl port-forward service/frontend 80:80 -n ${K8S_NAMESPACE} > /tmp/frontend-pf.log 2>&1 &
+                        nohup kubectl port-forward service/frontend 8080:80 -n ${K8S_NAMESPACE} > /tmp/frontend-pf.log 2>&1 &
                         nohup kubectl port-forward service/backend 5001:5001 -n ${K8S_NAMESPACE} > /tmp/backend-pf.log 2>&1 &
                         nohup kubectl port-forward service/admin-ui 3001:80 -n ${K8S_NAMESPACE} > /tmp/adminui-pf.log 2>&1 &
-
-                        echo "Port forwarding started."
                     """
                 }
             }
@@ -106,7 +95,6 @@ pipeline {
 
     post {
         always {
-            echo 'Cleaning workspace...'
             cleanWs()
         }
     }
